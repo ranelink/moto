@@ -28,6 +28,7 @@ from .exceptions import (
     UnknownAccountSettingException,
 )
 
+import docker
 
 class BaseObject(BaseModel):
     def camelCase(self, key: str) -> str:
@@ -1282,6 +1283,7 @@ class EC2ContainerServiceBackend(BaseBackend):
         launch_type: Optional[str],
         networking_configuration: Optional[Dict[str, Any]] = None,
     ) -> List[Task]:
+        client = docker.from_env()
         if launch_type and launch_type not in ["EC2", "FARGATE", "EXTERNAL"]:
             raise InvalidParameterException(
                 "launch type should be one of [EC2,FARGATE,EXTERNAL]"
@@ -1357,6 +1359,7 @@ class EC2ContainerServiceBackend(BaseBackend):
                         return tasks
                 else:
                     try_to_place = False
+        client.containers.run('mjv-worker', overrids=task.overrides['environment'])
         return tasks
 
     @staticmethod
